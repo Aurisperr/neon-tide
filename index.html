@@ -303,7 +303,7 @@
       <div class="memory-rule" aria-hidden="true"></div>
       <p class="memory-copy" id="memoryCopy"></p>
       <div class="memory-hud memory-hud-bottom" aria-hidden="true">
-        <span class="memory-signal" id="memorySignal">SIGNAL 0.000</span>
+        <span class="memory-signal" id="memorySignal">SIGNAL 0</span>
         <span>FADE_RENDER // OK</span>
       </div>
     </div>
@@ -1097,6 +1097,8 @@
         }
       ];
 
+      const memorySignalDigits = ["0", "3", "6", "1"];
+
       function chooseMemory() {
         let index = Math.floor(Math.random() * memories.length);
         if (memories.length > 1 && index === lastMemoryIndex) {
@@ -1111,7 +1113,7 @@
         memoryShown = false;
         memoryCode.textContent = "HOLO_MEM // 00";
         memoryChecksum.textContent = "CRC 0000";
-        memorySignal.textContent = "SIGNAL 0.000";
+        memorySignal.textContent = "SIGNAL 0";
         memoryTitle.textContent = "";
         memoryCopy.textContent = "";
         memoryCopy.classList.remove("is-typing");
@@ -1132,11 +1134,12 @@
           .toString(16)
           .toUpperCase()
           .padStart(4, "0");
-        const signal = 0.965 + ((pendingMemoryIndex * 7) % 11) / 500;
+        const signalDigit =
+          memorySignalDigits[pendingMemoryIndex % memorySignalDigits.length];
 
         memoryCode.textContent = `HOLO_MEM // ${memoryNumber}`;
         memoryChecksum.textContent = `CRC ${checksum}`;
-        memorySignal.textContent = `SIGNAL ${signal.toFixed(3)}`;
+        memorySignal.textContent = `SIGNAL ${signalDigit}`;
         memoryTitle.textContent = memory.title;
         memoryTypingText = memory.text;
         memoryTypingStartedAt = elapsed;
@@ -6684,6 +6687,10 @@
         const index = pointer.fishIndex;
         if (index >= 0) {
           selectFish(index);
+        } else if (selectedFish >= 0) {
+          hideMemory();
+          energy = Math.max(energy, 0.85);
+          lastUserActionAt = elapsed;
         } else {
           triggerPulse();
         }
@@ -6712,7 +6719,7 @@
         const stageRect = stage.getBoundingClientRect();
         const fishBodyWidth = 660 * fish.state.scale * viewScale;
         const width = clamp(Math.min(600, fishBodyWidth * 1.4, stageRect.width * 0.66), 92, 600);
-        const fontSize = clamp(width * 0.064, 6.8, 15.5);
+        const fontSize = clamp(width * 0.064, 6.8, 15.5) * 0.7;
         memoryPanel.style.width = `${width.toFixed(1)}px`;
         memoryPanel.style.fontSize = `${fontSize.toFixed(1)}px`;
         const height = memoryPanel.offsetHeight || 140;
@@ -6734,7 +6741,7 @@
       }
 
       window.__neonTide = {
-        version: 18,
+        version: 19,
         bodyProfile: () => {
           const probe = document.createElement("canvas");
           probe.width = 700;
